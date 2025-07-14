@@ -30,8 +30,10 @@ class WeatherFetcher {
         if (kIsWeb || waitForPosition) {
           try {
             position = await Geolocator.getCurrentPosition(
-                desiredAccuracy: LocationAccuracy.low,
-                timeLimit: Duration(seconds: 30));
+                locationSettings: const LocationSettings(
+              accuracy: LocationAccuracy.low,
+              timeLimit: Duration(seconds: 30),
+            ));
           } catch (exception) {
             developer.log("Can't get current position: exception=$exception",
                 name: 'WeatherFetcher', error: exception);
@@ -135,13 +137,15 @@ class WeatherFetcher {
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      throw Exception('Failed to download current weather!\n\n' + response.body);
+      throw Exception(
+          'Failed to download current weather!\n\n' + response.body);
     }
   }
 
   Future<OneCallResponse> fetchWeather() async {
     if (_lat == null || _lon == null)
-      throw Exception('Location is unknown! Perhaps you didn\'t allow location permissions?');
+      throw Exception(
+          'Location is unknown! Perhaps you didn\'t allow location permissions?');
 
     String url =
         'https://api.openweathermap.org/data/3.0/onecall?lat=$_lat&lon=$_lon&appid=${dotenv.env['OPENWEATHERMAP_API_KEY']}&units=metric&exclude=minutely,current';
@@ -179,7 +183,8 @@ class WeatherFetcher {
     } else {
       // If the server did not return a 200 OK response,
       // then throw an exception.
-      throw Exception('Failed to download historical weather!\n\n' + response.body);
+      throw Exception(
+          'Failed to download historical weather!\n\n' + response.body);
     }
   }
 }

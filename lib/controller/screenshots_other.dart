@@ -1,3 +1,4 @@
+// ignore: deprecated_member_use
 import 'dart:html' as html;
 
 import 'package:device_preview/device_preview.dart';

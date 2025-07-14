@@ -119,19 +119,20 @@ double nuptialHourlyPercentageModel(num lat, num lon, Hourly hourly) {
   double temp = hourly.temp!.toDouble();
   double wind = hourly.windSpeed!.toDouble();
   double gust = hourly.windGust?.toDouble() ?? hourly.windSpeed!.toDouble();
-  double windDeg = hourly.windDeg!.toDouble();
   double rain = hourly.pop?.toDouble() ?? 0.0;
   double humid = hourly.humidity!.toDouble();
   double cloud = hourly.clouds!.toDouble();
   double press = hourly.pressure!.toDouble();
   double dewPoint = hourly.dewPoint!.toDouble();
   double northern = lat > 0 ? 1.0 : 0.0;
-  int dayOfYear = int.parse(dayOfYearFormat
-      .format(DateTime.fromMillisecondsSinceEpoch((hourly.dt!) * 1000, isUtc: true)));
-  double daysSinceSpring = (dayOfYear - (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31)) % 365;
-  int hour = int.parse(
-      hourFormat.format(DateTime.fromMillisecondsSinceEpoch((hourly.dt!) * 1000, isUtc: true)));
-  if (northern == 1.0) daysSinceSpring = (daysSinceSpring - (31 + 30 + 31 + 30 + 31 + 31)) % 365;
+  int dayOfYear = int.parse(dayOfYearFormat.format(
+      DateTime.fromMillisecondsSinceEpoch((hourly.dt!) * 1000, isUtc: true)));
+  double daysSinceSpring =
+      (dayOfYear - (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31)) % 365;
+  int hour = int.parse(hourFormat.format(
+      DateTime.fromMillisecondsSinceEpoch((hourly.dt!) * 1000, isUtc: true)));
+  if (northern == 1.0)
+    daysSinceSpring = (daysSinceSpring - (31 + 30 + 31 + 30 + 31 + 31)) % 365;
 
   if (temp < 5) return 0.01;
   if (wind > 15) return 0.01;
@@ -187,7 +188,8 @@ double nuptialHourlyPercentageModel(num lat, num lon, Hourly hourly) {
           ])[1]));
 }
 
-double nuptialDailyPercentageModel(num lat, num lon, Daily daily, {bool nocturnal = false}) {
+double nuptialDailyPercentageModel(num lat, num lon, Daily daily,
+    {bool nocturnal = false}) {
   //double temp = nocturnal ? daily.temp!.eve!.toDouble() : daily.temp!.day!.toDouble();
   double temp = daily.temp!.day!.toDouble();
   //double morn = daily.temp!.morn!.toDouble();
@@ -199,10 +201,12 @@ double nuptialDailyPercentageModel(num lat, num lon, Daily daily, {bool nocturna
   double press = daily.pressure!.toDouble();
   double dewPoint = daily.dewPoint!.toDouble();
   double northern = lat > 0 ? 1.0 : 0.0;
-  int dayOfYear = int.parse(
-      dayOfYearFormat.format(DateTime.fromMillisecondsSinceEpoch((daily.dt!) * 1000, isUtc: true)));
-  double daysSinceSpring = (dayOfYear - (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31)) % 365;
-  if (northern == 1.0) daysSinceSpring = (daysSinceSpring - (31 + 30 + 31 + 30 + 31 + 31)) % 365;
+  int dayOfYear = int.parse(dayOfYearFormat.format(
+      DateTime.fromMillisecondsSinceEpoch((daily.dt!) * 1000, isUtc: true)));
+  double daysSinceSpring =
+      (dayOfYear - (31 + 28 + 31 + 30 + 31 + 30 + 31 + 31)) % 365;
+  if (northern == 1.0)
+    daysSinceSpring = (daysSinceSpring - (31 + 30 + 31 + 30 + 31 + 31)) % 365;
 
   if (temp < 5) return 0.01;
   if (wind > 15) return 0.01;
@@ -259,7 +263,9 @@ double nuptialDailyPercentageModel(num lat, num lon, Daily daily, {bool nocturna
 /// a nuptial flight today.
 ///
 double nuptialCalculator(List<Map<String, num>> values) {
-  var sum = values.map((m) => m['percentage']! * m['weighting']!).reduce((a, b) => a + b);
+  var sum = values
+      .map((m) => m['percentage']! * m['weighting']!)
+      .reduce((a, b) => a + b);
   var count = values.map((e) => e['weighting']!).reduce((a, b) => a + b);
   var result = sum / count;
   // developer.log("sum=$sum", name: 'nuptialPercentage');
@@ -271,17 +277,24 @@ double nuptialCalculator(List<Map<String, num>> values) {
 /// Evening temperature. Celsius.
 double temperatureContribution(num temp) {
   // z = (x – μ (mean)) / σ (standard deviation)
-  return max(0, min(0.5, Normal().cdf(-(temp - TEMP_AVG).abs() / TEMP_STD))) * 2;
+  return max(0, min(0.5, Normal().cdf(-(temp - TEMP_AVG).abs() / TEMP_STD))) *
+      2;
 }
 
 /// Humidity, %
 double humidityContribution(num humidity) {
-  return max(0, min(0.5, Normal().cdf(-(humidity - HUMIDITY_AVG).abs() / HUMIDITY_STD))) * 2;
+  return max(
+          0,
+          min(0.5,
+              Normal().cdf(-(humidity - HUMIDITY_AVG).abs() / HUMIDITY_STD))) *
+      2;
 }
 
 /// Wind speed. Units metre/sec
 double windContribution(num windSpeed) {
-  return max(0, min(0.5, Normal().cdf(-(windSpeed - WIND_AVG).abs() / WIND_STD))) * 2;
+  return max(
+          0, min(0.5, Normal().cdf(-(windSpeed - WIND_AVG).abs() / WIND_STD))) *
+      2;
 }
 
 /// Probability of precipitation
@@ -297,12 +310,18 @@ double rainContribution(num pop) {
 
 /// Cloudiness, %
 double cloudinessContribution(num clouds) {
-  return max(0, min(0.5, Normal().cdf(-(clouds - CLOUD_AVG).abs() / CLOUD_STD))) * 2;
+  return max(
+          0, min(0.5, Normal().cdf(-(clouds - CLOUD_AVG).abs() / CLOUD_STD))) *
+      2;
 }
 
 /// Air pressure (hPa)
 double pressureContribution(num pressure) {
-  return max(0, min(0.5, Normal().cdf(-(pressure - PRESSURE_AVG).abs() / PRESSURE_STD))) * 2;
+  return max(
+          0,
+          min(0.5,
+              Normal().cdf(-(pressure - PRESSURE_AVG).abs() / PRESSURE_STD))) *
+      2;
 }
 
 /// UVI

@@ -21,8 +21,10 @@ class MyMapApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'OpenWeatherMap Layers',
-      theme: ThemeData(brightness: Brightness.light, primarySwatch: Colors.blueGrey),
-      darkTheme: ThemeData(brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
+      theme: ThemeData(
+          brightness: Brightness.light, primarySwatch: Colors.blueGrey),
+      darkTheme: ThemeData(
+          brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
       themeMode: ThemeMode.system,
       home: MapPage(),
     );
@@ -73,6 +75,19 @@ class _MapPageState extends State<MapPage> {
     }
   }
 
+  String _formatWmsBaseUrl(String baseUrl) {
+    // Ensure the base URL ends with either '?' or '/' for proper WMS parameter appending
+    if (baseUrl.endsWith('?') || baseUrl.endsWith('/')) {
+      return baseUrl;
+    } else if (baseUrl.contains('?')) {
+      // If it already has query parameters, append with &
+      return baseUrl + '&';
+    } else {
+      // If no query parameters, append with ?
+      return baseUrl + '?';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -109,20 +124,23 @@ class _MapPageState extends State<MapPage> {
           },
           interactionOptions: InteractionOptions(
             flags: InteractiveFlag.all & ~InteractiveFlag.rotate,
-            cursorKeyboardRotationOptions: CursorKeyboardRotationOptions.disabled(),
+            cursorKeyboardRotationOptions:
+                CursorKeyboardRotationOptions.disabled(),
           ),
         ),
         children: <Widget>[
           TileLayer(
               wmsOptions: WMSTileLayerOptions(
-                  baseUrl: 'https://maps.bitbot.com.au/service?', layers: ['backdrop']),
+                  baseUrl: _formatWmsBaseUrl(dotenv.env['MAP_TILES_URL'] ??
+                      'https://maps.example.com/service?'),
+                  layers: ['backdrop']),
               // urlTemplate:
               // //'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}',
               // //'https://maps.bitbot.com.au/tiles/backdrop/{z}/{x}/{y}.{ext}?origin=sw',
               // 'https://maps.bitbot.com.au/tms/1.0.0/backdrop/EPSG3857/{z}/{x}/{y}.{ext}?origin=nw',
               // //'https://api.maptiler.com/maps/backdrop/{z}/{x}/{y}.png?key={apiKey}',
               subdomains: ['a', 'b', 'c'],
-              userAgentPackageName: 'au.com.bitbot.nuptialflight',
+              userAgentPackageName: 'fr.jessylange.nuptialflight',
               minZoom: 0,
               maxZoom: 20,
               additionalOptions: {
@@ -171,18 +189,21 @@ class _MapPageState extends State<MapPage> {
     );
   }
 
-  SingleChildRenderObjectWidget _openWeatherMapWidget(String layer, ColorFilter colorFilter) {
+  SingleChildRenderObjectWidget _openWeatherMapWidget(
+      String layer, ColorFilter colorFilter) {
     return Opacity(
       opacity: 0.165,
       child: TileLayer(
-        wmsOptions:
-            WMSTileLayerOptions(baseUrl: 'https://maps.bitbot.com.au/service?', layers: [layer]),
+        wmsOptions: WMSTileLayerOptions(
+            baseUrl: _formatWmsBaseUrl(dotenv.env['MAP_TILES_URL'] ??
+                'https://maps.example.com/service?'),
+            layers: [layer]),
         // urlTemplate:
         //     //'https://tile.openweathermap.org/map/{layer}/{z}/{x}/{y}.{ext}?appid={apiKey}',
         //     'https://maps.bitbot.com.au/tiles/{layer}/{z}/{x}/{y}.{ext}?origin=nw',
         // //'https://maps.bitbot.com.au/tms/1.0.0/{layer}/EPSG900913/{z}/{x}/{y}.{ext}',
         subdomains: ['a', 'b', 'c'],
-        userAgentPackageName: 'au.com.bitbot.nuptialflight',
+        userAgentPackageName: 'com.example.nuptialflight',
         minZoom: 0,
         maxZoom: 19,
         additionalOptions: {

@@ -29,7 +29,7 @@ dependencies:
   cupertino_icons: ^1.0.5
 
   # All app dependencies
-  home_widget: ^0.7.0
+  home_widget: ^0.8.0
     #path: ../home_widget
     #git: https://github.com/ABausG/home_widget.git
     #git: https://github.com/bradrushworth/home_widget.git
@@ -37,11 +37,12 @@ dependencies:
   #http: ^0.13.5
   #spectrum: ^0.2.1+1
   normal: ^0.7.0
-  geolocator: ^13.0.4
+  geolocator: ^14.0.2
   flutter_dotenv: ^5.2.1
   url_launcher: ^6.3.1
   auto_size_text: ^3.0.0
   html: ^0.15.3
+  flutter_riverpod: ^2.5.1
   #image: ^3.1.0
   #package_info_plus: ^3.1.0
   flutter_google_places: #^0.3.0
@@ -74,25 +75,12 @@ dev_dependencies:
   flutter_test:
     sdk: flutter
   test: any
+  riverpod_lint: ^2.3.0
   #flutter_automation: any
   flutter_launcher_icons: ^0.14.3 # Causes some dependency conflicts
   device_preview: ^1.1.0
 
-dependency_overrides:
-  device_preview:
-    git:
-      url: https://github.com/bradrushworth/flutter_device_preview.git
-      path: device_preview
-#    path: ../flutter_device_preview/device_preview
-  device_frame:
-    git:
-      url: https://github.com/bradrushworth/flutter_device_preview.git
-      path: device_frame
-#    path: ../flutter_device_preview/device_frame
-#  google_api_headers:
-##    path: ../google_api_headers
-#    git:
-#      url: https://github.com/bradrushworth/google_api_headers.git
+# dependency_overrides removed – using official pub versions
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

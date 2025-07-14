@@ -1,0 +1,14 @@
+{
+  "name": "nuptialflight-cors-proxy",
+  "version": "1.0.0",
+  "description": "Simple CORS proxy for Google Places API",
+  "main": "server.js",
+  "type": "module",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.19.2",
+    "node-fetch": "^3.3.2"
+  }
+} 

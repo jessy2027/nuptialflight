@@ -4,12 +4,14 @@ import 'package:darango/darango.dart';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:mobile_device_identifier/mobile_device_identifier.dart';
+import 'package:flutter_dotenv/flutter_dotenv.dart';
 
 import '../responses/onecall_response.dart';
 import '../responses/weather_response.dart';
 
 class ArangoSingleton {
-  static final ArangoSingleton _singleton = ArangoSingleton._privateConstructor();
+  static final ArangoSingleton _singleton =
+      ArangoSingleton._privateConstructor();
 
   // Create client for Arango database
   Database? _arangoClient;
@@ -26,13 +28,18 @@ class ArangoSingleton {
   }
 
   void init() async {
-    _arangoClient = Database('https://api.bitbot.com.au:8530');
-    await _arangoClient!.connect('nuptialFlight', 'nuptialflight', 'fdggdsgdfstg34wfwfwff');
+    _arangoClient =
+        Database(dotenv.env['API_BASE_URL'] ?? 'https://api.example.com:8530');
+    await _arangoClient!
+        .connect('nuptialFlight', 'nuptialflight', 'fdggdsgdfstg34wfwfwff');
   }
 
-  void createWeather(String? version, String? buildNumber, OneCallResponse? _weather,
-      OneCallResponse? _historical, CurrentWeatherResponse? _currentWeather) async {
-
+  void createWeather(
+      String? version,
+      String? buildNumber,
+      OneCallResponse? _weather,
+      OneCallResponse? _historical,
+      CurrentWeatherResponse? _currentWeather) async {
     String? deviceId;
     if (kIsWeb) {
       deviceId = 'web';
@@ -77,8 +84,13 @@ class ArangoSingleton {
     }
   }
 
-  void updateWeather(String? version, String? buildNumber, String size, OneCallResponse? _weather,
-      OneCallResponse? _historical, CurrentWeatherResponse? _currentWeather) async {
+  void updateWeather(
+      String? version,
+      String? buildNumber,
+      String size,
+      OneCallResponse? _weather,
+      OneCallResponse? _historical,
+      CurrentWeatherResponse? _currentWeather) async {
     String? deviceId;
     if (kIsWeb) {
       deviceId = 'web';
@@ -102,7 +114,9 @@ class ArangoSingleton {
     {
       // Let's update the existing database entry
       Collection? collection = await _arangoClient!.collection('historical');
-      await collection!.document(document_handle: _weatherHistoricalKey).update({
+      await collection!
+          .document(document_handle: _weatherHistoricalKey)
+          .update({
         'flight': 'yes',
         'size': size,
         'version': '$version+$buildNumber',

@@ -4,7 +4,7 @@ import 'package:home_widget/home_widget.dart';
 
 void initialiseWidget() {
   if (Platform.isAndroid) {
-    HomeWidget.registerBackgroundCallback(backgroundCallback);
+    HomeWidget.registerInteractivityCallback(backgroundCallback);
   }
 }
 

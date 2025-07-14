@@ -32,26 +32,71 @@ Position? _lastKnownPosition;
 // when did we check the last time
 DateTime? _lastCheckDate;
 
+/// Safely get location with permission checks
+Future<Position?> _getLocationSafely() async {
+  try {
+    // Check if location services are enabled
+    bool serviceEnabled = await Geolocator.isLocationServiceEnabled();
+    if (!serviceEnabled) {
+      print('[Location] Location services are disabled.');
+      return null;
+    }
+
+    // Check location permissions
+    LocationPermission permission = await Geolocator.checkPermission();
+    if (permission == LocationPermission.denied) {
+      permission = await Geolocator.requestPermission();
+      if (permission == LocationPermission.denied) {
+        print('[Location] Location permissions are denied');
+        return null;
+      }
+    }
+
+    if (permission == LocationPermission.deniedForever) {
+      print('[Location] Location permissions are permanently denied');
+      return null;
+    }
+
+    // Try to get last known position first (faster)
+    Position? position = await Geolocator.getLastKnownPosition();
+    if (position != null) {
+      return position;
+    }
+
+    // If no last known position, get current position
+    return await Geolocator.getCurrentPosition(
+      desiredAccuracy: LocationAccuracy.medium,
+      timeLimit: const Duration(seconds: 10),
+    );
+  } catch (e) {
+    print('[Location] Error getting location: $e');
+    return null;
+  }
+}
+
 Future<void> initializeService() async {
   const AndroidNotificationChannel channelReport = AndroidNotificationChannel(
     notificationChannelIdReport, // id
     'Nuptial Flight Reports', // title
-    description: 'Notify when nearby users report a nuptial flight.', // description
+    description:
+        'Notify when nearby users report a nuptial flight.', // description
     importance: Importance.high, // importance must be at low or higher level
   );
 
-  const AndroidNotificationChannel channelPercentage = AndroidNotificationChannel(
+  const AndroidNotificationChannel channelPercentage =
+      AndroidNotificationChannel(
     notificationChannelIdPercentage, // id
     'Nuptial Flight Percentage', // title
-    description: 'Update widget and notify for high nuptial flight percentage.', // description
+    description:
+        'Update widget and notify for high nuptial flight percentage.', // description
     importance: Importance.high, // importance must be at low or higher level
   );
 
   final FlutterLocalNotificationsPlugin flutterLocalNotificationsPlugin =
       FlutterLocalNotificationsPlugin();
 
-  await flutterLocalNotificationsPlugin
-      .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+  await flutterLocalNotificationsPlugin.resolvePlatformSpecificImplementation<
+      AndroidFlutterLocalNotificationsPlugin>()
     ?..createNotificationChannel(channelReport)
     ..createNotificationChannel(channelPercentage);
 
@@ -66,18 +111,20 @@ Future<void> initializeService() async {
 
   // Configure BackgroundFetch.
   try {
-    var status = await BackgroundFetch.configure(BackgroundFetchConfig(
-        minimumFetchInterval: 15,
-        forceAlarmManager: false,
-        stopOnTerminate: false,
-        startOnBoot: true,
-        enableHeadless: true,
-        requiresBatteryNotLow: false,
-        requiresCharging: false,
-        requiresStorageNotLow: false,
-        requiresDeviceIdle: false,
-        requiredNetworkType: NetworkType.NONE
-    ), _onBackgroundFetch, _onBackgroundFetchTimeout);
+    var status = await BackgroundFetch.configure(
+        BackgroundFetchConfig(
+            minimumFetchInterval: 15,
+            forceAlarmManager: false,
+            stopOnTerminate: false,
+            startOnBoot: true,
+            enableHeadless: true,
+            requiresBatteryNotLow: false,
+            requiresCharging: false,
+            requiresStorageNotLow: false,
+            requiresDeviceIdle: false,
+            requiredNetworkType: NetworkType.NONE),
+        _onBackgroundFetch,
+        _onBackgroundFetchTimeout);
     print('[BackgroundFetch] configure success: $status');
 
     // Schedule a "one-shot" custom-task in 10000ms.
@@ -89,20 +136,18 @@ Future<void> initializeService() async {
         periodic: false,
         forceAlarmManager: true,
         stopOnTerminate: false,
-        enableHeadless: true
-    ));
-  } on Exception catch(e) {
+        enableHeadless: true));
+  } on Exception catch (e) {
     print("[BackgroundFetch] configure ERROR: $e");
   }
 }
 
 void _onBackgroundFetch(String taskId) async {
-  var timestamp = DateTime.now();
   // This is the fetch-event callback.
-  print("[BackgroundFetch] Event received: $taskId");
+  print("[BackgroundFetch] Event received: $taskId at ${DateTime.now()}");
 
   if (taskId == "flutter_background_fetch") {
-    _lastKnownPosition = await Geolocator.getLastKnownPosition();
+    _lastKnownPosition = await _getLocationSafely();
     await getReportedFlightsNearMe();
     await getServicePercentage();
   }
@@ -134,18 +179,18 @@ void backgroundFetchHeadlessTask(HeadlessTask task) async {
   }
   print('[BackgroundFetch] Headless event received.');
 
-  _lastKnownPosition = await Geolocator.getLastKnownPosition();
+  _lastKnownPosition = await _getLocationSafely();
   await getReportedFlightsNearMe();
   await getServicePercentage();
 
   if (taskId == 'flutter_background_fetch') {
     BackgroundFetch.scheduleTask(TaskConfig(
-        taskId: "com.transistorsoft.customtask",
-        delay: 5000,
-        periodic: false,
-        forceAlarmManager: false,
-        stopOnTerminate: false,
-        enableHeadless: true,
+      taskId: "com.transistorsoft.customtask",
+      delay: 5000,
+      periodic: false,
+      forceAlarmManager: false,
+      stopOnTerminate: false,
+      enableHeadless: true,
     ));
   }
   BackgroundFetch.finish(taskId);
@@ -160,21 +205,27 @@ Future<void> getReportedFlightsNearMe() async {
     minutes = 30;
   } else {
     DateTime now = DateTime.now();
-    minutes = (now.millisecondsSinceEpoch - _lastCheckDate!.millisecondsSinceEpoch) ~/ 1000 ~/ 60;
+    minutes =
+        (now.millisecondsSinceEpoch - _lastCheckDate!.millisecondsSinceEpoch) ~/
+            1000 ~/
+            60;
     _lastCheckDate = now;
   }
 
   int numFlights = 0;
   int closestDistance = 0;
-  await ArangoSingleton().getRecentFlightsNearMe(_lastKnownPosition, -minutes).then((values) {
+  await ArangoSingleton()
+      .getRecentFlightsNearMe(_lastKnownPosition, -minutes)
+      .then((values) {
     debugPrint('getRecentFlightsNearMe: values=$values');
     numFlights = values.length;
     if (numFlights > 0) {
-      closestDistance = values.reduce(
-          (current, next) => current['distance'] > next['distance'] ? current : next)['distance'];
+      closestDistance = values.reduce((current, next) =>
+          current['distance'] > next['distance'] ? current : next)['distance'];
     }
   });
-  debugPrint('getRecentFlightsNearMe: Reported local nuptial flights: $numFlights in $minutes mins');
+  debugPrint(
+      'getRecentFlightsNearMe: Reported local nuptial flights: $numFlights in $minutes mins');
 
   if (numFlights > 0) {
     flutterLocalNotificationsPlugin.show(
@@ -200,17 +251,19 @@ Future<void> getServicePercentage() async {
   if (_lastKnownPosition == null) {
     debugPrint('getServicePercentage: Last known position is null');
   } else {
-    debugPrint('getServicePercentage: Last known position is ' + _lastKnownPosition.toString());
+    debugPrint('getServicePercentage: Last known position is ' +
+        _lastKnownPosition.toString());
     WeatherFetcher weatherFetcher = WeatherFetcher();
     weatherFetcher.setPosition(_lastKnownPosition!);
     int percentage = 0;
     await weatherFetcher.fetchWeather().then((OneCallResponse weather) {
-      percentage =
-          (nuptialDailyPercentageModel(weather.lat!, weather.lon!, weather.daily!.elementAt(0)) *
+      percentage = (nuptialDailyPercentageModel(
+                  weather.lat!, weather.lon!, weather.daily!.elementAt(0)) *
               100.0)
-              .toInt();
+          .toInt();
     });
-    debugPrint('getServicePercentage: Percentage for nuptial flights: $percentage');
+    debugPrint(
+        'getServicePercentage: Percentage for nuptial flights: $percentage');
     updateAppWidget([percentage]);
 
     if (percentage >= greenThreshold) {

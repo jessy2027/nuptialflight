@@ -31,6 +31,7 @@
 .pub/
 /build/
 /assets/.env
+arangodb_data
 
 # Web related
 lib/generated_plugin_registrant.dart
@@ -51,3 +52,9 @@ app.*.map.json
 /gradlew.bat
 /screenshots/resized/
 /coverage/lcov.info
+
+# Proxy
+proxy/node_modules
+proxy/npm-debug.log*
+proxy/yarn-debug.log*
+proxy/yarn-error.log*
