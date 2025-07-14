@@ -129,52 +129,43 @@ class _MapPageState extends State<MapPage> {
           ),
         ),
         children: <Widget>[
+          // Using OpenStreetMap as fallback since local tile server needs .mbtiles files
           TileLayer(
-              wmsOptions: WMSTileLayerOptions(
-                  baseUrl: _formatWmsBaseUrl(dotenv.env['MAP_TILES_URL'] ??
-                      'https://maps.example.com/service?'),
-                  layers: ['backdrop']),
-              // urlTemplate:
-              // //'https://stamen-tiles-{s}.a.ssl.fastly.net/toner/{z}/{x}/{y}{r}.{ext}',
-              // //'https://maps.bitbot.com.au/tiles/backdrop/{z}/{x}/{y}.{ext}?origin=sw',
-              // 'https://maps.bitbot.com.au/tms/1.0.0/backdrop/EPSG3857/{z}/{x}/{y}.{ext}?origin=nw',
-              // //'https://api.maptiler.com/maps/backdrop/{z}/{x}/{y}.png?key={apiKey}',
+              urlTemplate: 'https://tile.openstreetmap.org/{z}/{x}/{y}.png',
               subdomains: ['a', 'b', 'c'],
               userAgentPackageName: 'fr.jessylange.nuptialflight',
               minZoom: 0,
-              maxZoom: 20,
-              additionalOptions: {
-                'ext': 'png',
-                //'apiKey': dotenv.env['MAPTILER_MAP_KEY']!,
-              }),
+              maxZoom: 19),
 
+          // Weather layers temporarily disabled until WMS server is properly configured
+          // TODO: Set up proper WMS server for weather data
           // _openWeatherMapWidget('precipitation_new'),
           // _openWeatherMapWidget('pressure_new'),
-          _openWeatherMapWidget(
-            'clouds_new',
-            const ColorFilter.matrix(<double>[
-              0, 0, 0, 510, 0, // R
-              0, 0, 0, 0, 0, // G
-              0, 0, 0, 0, 0, // B
-              0, 0, 0, -2, 510, // A
-            ]),
-          ),
-          _openWeatherMapWidget(
-              'wind_new',
-              const ColorFilter.matrix(<double>[
-                0, 0, 0, 637, 0, // R
-                0, 0, 0, 0, 0, // G
-                0, 0, 0, 0, 0, // B
-                0, 0, 0, 637, 0, // A
-              ])),
-          _openWeatherMapWidget(
-              'temp_new',
-              const ColorFilter.matrix(<double>[
-                1, -2, 6, 0, -255, // R
-                0, 0, 0, 0, 0, // G
-                0, 0, 0, 0, 0, // B
-                0, 0, 2, 0, -60, // A
-              ])),
+          // _openWeatherMapWidget(
+          //   'clouds_new',
+          //   const ColorFilter.matrix(<double>[
+          //     0, 0, 0, 510, 0, // R
+          //     0, 0, 0, 0, 0, // G
+          //     0, 0, 0, 0, 0, // B
+          //     0, 0, 0, -2, 510, // A
+          //   ]),
+          // ),
+          // _openWeatherMapWidget(
+          //     'wind_new',
+          //     const ColorFilter.matrix(<double>[
+          //       0, 0, 0, 637, 0, // R
+          //       0, 0, 0, 0, 0, // G
+          //       0, 0, 0, 0, 0, // B
+          //       0, 0, 0, 637, 0, // A
+          //     ])),
+          // _openWeatherMapWidget(
+          //     'temp_new',
+          //     const ColorFilter.matrix(<double>[
+          //       1, -2, 6, 0, -255, // R
+          //       0, 0, 0, 0, 0, // G
+          //       0, 0, 0, 0, 0, // B
+          //       0, 0, 2, 0, -60, // A
+          //     ])),
           MarkerLayer(markers: _markers),
           Align(
             alignment: Alignment.bottomLeft,
