@@ -21,12 +21,10 @@ class MyMapApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'OpenWeatherMap Layers',
-      theme: ThemeData(
-          brightness: Brightness.light, primarySwatch: Colors.blueGrey),
-      darkTheme: ThemeData(
-          brightness: Brightness.dark, primarySwatch: Colors.blueGrey),
+      theme: AppTheme.lightTheme,
+      darkTheme: AppTheme.darkTheme,
       themeMode: ThemeMode.system,
-      home: MapPage(),
+      home: ModernMapScreen(),
     );
   }
 }
