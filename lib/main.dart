@@ -32,7 +32,10 @@ import 'responses/onecall_response.dart';
 import 'responses/weather_response.dart';
 import 'utils.dart';
 import 'view/map.dart';
+import 'view/modern_home_screen.dart';
+import 'view/modern_map_screen.dart';
 import 'core/providers/providers.dart';
+import 'core/theme/app_theme.dart';
 
 final DateFormat dateFormat = DateFormat("yyyy-MM-dd");
 final DateFormat longDateFormat = DateFormat.MMMEd();
@@ -83,18 +86,10 @@ class _MyMaterialAppState extends State<MyMaterialApp> {
         // For DevicePreview
         locale: DevicePreview.locale(context),
         builder: DevicePreview.appBuilder,
-        theme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: primarySwatch, brightness: Brightness.light),
-          useMaterial3: true,
-        ),
-        darkTheme: ThemeData(
-          colorScheme: ColorScheme.fromSeed(
-              seedColor: primarySwatch, brightness: Brightness.dark),
-          useMaterial3: true,
-        ),
+        theme: AppTheme.lightTheme,
+        darkTheme: AppTheme.darkTheme,
         themeMode: ThemeMode.system,
-        home: MyHomePage(
+        home: ModernHomeScreen(
           primarySwatch: setPrimarySwatch,
           weatherFetcher: WeatherFetcher(),
         ));
